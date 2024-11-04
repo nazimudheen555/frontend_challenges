@@ -40,10 +40,9 @@ const loginUser = async (req: Request, res: Response) => {
 const allUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find();
-    if(users) res.send(users)
-
-  } catch (error) {
-    throw new Error(error)
+    if (users) res.send(users);
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : (error as string));
   }
 };
 
@@ -55,11 +54,46 @@ const userProfile = async (req: Request, res: Response) => {
 
     if (user) res.send(user);
   } catch (error: unknown) {
-    throw new Error(error);
+    throw new Error(error instanceof Error ? error.message : (error as string));
   }
 };
 
 // delete a user
-// update a user
+const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
 
-export { addUser, loginUser, allUsers, userProfile };
+    const deleteOne = await User.findByIdAndDelete(id);
+    if (deleteOne) {
+      res.status(201).json({ message: "User deleted successfully" });
+    } else {
+      throw new Error("The user not found");
+    }
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : (error as string));
+  }
+};
+
+// update a user
+const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { first_name, last_name, email, mobile } = req.body;
+
+    const updateUser = await User.findByIdAndUpdate(id, {
+      first_name,
+      last_name,
+      email,
+      mobile,
+    }, { new: true });
+    if (updateUser) {
+      res.status(201).json(updateUser);
+    } else {
+      throw new Error("The user not found");
+    }
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : (error as string));
+  }
+};
+
+export { addUser, loginUser, allUsers, userProfile, deleteUser, updateUser };
